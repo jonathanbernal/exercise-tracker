@@ -42,6 +42,7 @@ app.post('/api/users', (req, res) => {
 
 app.post('/api/users/:_id/exercises', async (req, res) => {
   const requestedId = req.body[':_id'];
+  const bodyDate = req.body.date;
   const userExists =  await User.findOne({_id: requestedId});
   
   if (userExists) {
@@ -49,7 +50,7 @@ app.post('/api/users/:_id/exercises', async (req, res) => {
       username: userExists._id,
       description: req.body.description,
       duration: req.body.duration,
-      date: req.body.date ? new Date(req.body.date).toDateString() : new Date().toDateString()
+      date: req.body.date  ? new Date(Date.parse(req.body.date)).toDateString() : Date.now()
     });
 
     await newExercise.populate('username', 'username  -_id');
@@ -58,7 +59,9 @@ app.post('/api/users/:_id/exercises', async (req, res) => {
     userExists.exercises.push(newExercise);
     await userExists.populate('exercises', '-username');
     const result = await userExists.save();
-    res.send(result);
+    // return the exercise that was just created so the user knows
+    // what was inserted into the target document.
+    res.send(newExercise);
   } else {
     res.json({error: `user with id ${req.body[':_id']} does not exist in DB`});
   }

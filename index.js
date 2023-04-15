@@ -24,7 +24,7 @@ app.get('/', (req, res) => {
 
 app.get('/api/users', async (req, res) => {
   const allUserDocuments = await User.find();
-  res.json({users: allUserDocuments});
+  res.json(allUserDocuments);
 });
 
 app.post('/api/users', (req, res) => {
@@ -52,7 +52,7 @@ app.post('/api/users/:_id/exercises', async (req, res) => {
       date: req.body.date ? new Date(req.body.date).toDateString() : new Date().toDateString()
     });
 
-    await newExercise.populate('username', 'username -_id');
+    await newExercise.populate('username', 'username  -_id');
     console.log(newExercise);
     await newExercise.save();
     userExists.exercises.push(newExercise);

@@ -11,6 +11,8 @@ const ExerciseSchema = new mongoose.Schema({
     date: {
         type: Date,
     }
+}, {
+    collection: 'exercises'
 });
 
 module.exports = mongoose.model('Exercise', ExerciseSchema);

@@ -13,6 +13,8 @@ const UserSchema = new mongoose.Schema({
             ref: 'Exercise'
         }
     ]
+}, {
+    collection: 'users'
 });
 
 module.exports = mongoose.model('User', UserSchema);

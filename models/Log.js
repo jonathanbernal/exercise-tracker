@@ -12,6 +12,8 @@ const LogSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Exercise'
     }]
+}, {
+    collection: 'logs'
 });
 
-module.exports = mongoose.Model('Log', LogSchema);
+module.exports = mongoose.model('Log', LogSchema);

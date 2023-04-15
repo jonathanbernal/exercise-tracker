@@ -12,7 +12,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.urlencoded({extended: true}));
 
 // User-defined imports
-const database = require('./bin/database.js');
+const database = require('./bin/Database.js');
 const User = require('./models/User.js');
 const Exercise = require('./models/Exercise.js');
 const Log = require('./models/Log.js');
@@ -33,7 +33,7 @@ app.post('/api/users', (req, res) => {
     username: req.body.username
   });
 
-  newUser.save().then(savedUser => res.json({user: savedUser}))
+  newUser.save().then(savedUser => res.json(savedUser))
     .catch(err => {
       console.log('Error adding user. User already exists in DB');
       res.json({error: 'user already exists'});

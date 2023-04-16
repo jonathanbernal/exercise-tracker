@@ -2,12 +2,8 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const LogSchema = new Schema({
-    username: {
-        type: Schema.Types.ObjectId,
-        ref: 'User'
-    },
+    username: String,
     count: Number,
-    _id: Schema.Types.ObjectId,
     log: [{
         type: Schema.Types.ObjectId,
         ref: 'Exercise'

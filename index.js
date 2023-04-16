@@ -84,7 +84,9 @@ app.post('/api/users/:_id/exercises', async (req, res) => {
       // what was inserted into the target document.
 
       // This response does not represent the id with which each
-      // exercise is stored. Each exercise needs its own id, or else
+      // exercise is stored. Rather, the id below represents that of
+      // the user that requested this exercise to be added to it.
+      // Each exercise needs its own id, or else
       // mongoDB will complain about creating duplicates.
       res.json({
         username: newExercise.username,
@@ -94,15 +96,39 @@ app.post('/api/users/:_id/exercises', async (req, res) => {
         _id: updatedUser._id,
       });
     } else {
-      res.json({ error: `user with id ${req.params[':_id']} does not exist in DB` });
+      res.json({ error: `User with id ${requestedId} does not exist in DB` });
     }
   } catch (err) {
     console.log(err);
   }
 });
 
-app.post('/api/users/:_id/logs', async (req, res) => {
+app.get('/api/users/:_id/logs', async (req, res) => {
   const requestedId = req.params['_id'];
+  
+  try {
+    const userExists = await User.findOne({_id: requestedId}).populate('exercises', '-username -_id');
+    
+    if(userExists) {
+      const log = new Log({
+        username: userExists.username,
+        count: userExists.exercises.length,
+        log: userExists.exercises,
+      })
+      
+      res.json({
+        username: log.username,
+        count: log.count,
+        _id: userExists._id,
+        log: log.log
+      })
+    } else {
+      res.json({error: `User with id ${requestedId} does not exist in DB.`});
+    }
+
+  } catch(err) {
+    console.log(err);
+  }
    
 });
 // TODO: think about how to implement get route for

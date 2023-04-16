@@ -82,10 +82,10 @@ app.post('/api/users/:_id/exercises', async (req, res) => {
       // what was inserted into the target document.
       res.json({
         username: newExercise.username,
-        _id: result.id,
         description: newExercise.description,
         duration: newExercise.duration,
         date: newExercise.date,
+        _id: result.id,
       });
     } else {
       res.json({ error: `user with id ${req.body[':_id']} does not exist in DB` });

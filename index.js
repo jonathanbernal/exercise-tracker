@@ -47,13 +47,13 @@ app.post('/api/users/:_id/exercises', async (req, res) => {
   
   if (userExists) {
     const newExercise = new Exercise({
-      username: userExists._id,
+      username: userExists.username,
       description: req.body.description,
       duration: req.body.duration,
       date: req.body.date  ? new Date(Date.parse(req.body.date)).toDateString() : Date.now()
     });
 
-    await newExercise.populate('username', 'username  -_id');
+    //await newExercise.populate('user', 'username _id');
     console.log(newExercise);
     await newExercise.save();
     userExists.exercises.push(newExercise);

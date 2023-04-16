@@ -14,6 +14,7 @@ const LogSchema = new Schema({
     }]
 }, {
     collection: 'logs',
+    versionKey: false,
 });
 
 module.exports = mongoose.model('Log', LogSchema);

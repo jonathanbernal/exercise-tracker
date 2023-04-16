@@ -36,7 +36,10 @@ app.post('/api/users', (req, res) => {
   newUser.save().then(savedUser => res.json(savedUser))
     .catch(err => {
       console.log('Error adding user. User already exists in DB');
-      res.json({error: 'user already exists'});
+      // We basically show the user the already created user for convenience
+      // but we are not creating duplicates.
+      User.findOne({username: req.body.username})
+        .then( (existingUser) => res.json({error: `user with id ${existingUser.id} already exists`})) ;
     });
 });
 

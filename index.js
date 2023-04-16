@@ -74,29 +74,37 @@ app.post('/api/users/:_id/exercises', async (req, res) => {
         username: userExists.username,
         description: req.body.description,
         duration: req.body.duration,
-        date: dateToInsert
+        date: dateToInsert,
       });
 
       await newExercise.save();
       userExists.exercises.push(newExercise);
-      const result = await userExists.save();
+      const updatedUser = await userExists.save();
       // return the exercise that was just created so the user knows
       // what was inserted into the target document.
+
+      // This response does not represent the id with which each
+      // exercise is stored. Each exercise needs its own id, or else
+      // mongoDB will complain about creating duplicates.
       res.json({
         username: newExercise.username,
         description: newExercise.description,
         duration: newExercise.duration,
         date: newExercise.date,
-        _id: result.id,
+        _id: updatedUser._id,
       });
     } else {
-      res.json({ error: `user with id ${req.body[':_id']} does not exist in DB` });
+      res.json({ error: `user with id ${req.params[':_id']} does not exist in DB` });
     }
   } catch (err) {
     console.log(err);
   }
 });
 
+app.post('/api/users/:_id/logs', async (req, res) => {
+  const requestedId = req.params['_id'];
+   
+});
 // TODO: think about how to implement get route for
 // GET /api/users/:_id/logs?[from][&to][&limit]
 

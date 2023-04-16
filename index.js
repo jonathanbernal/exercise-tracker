@@ -59,7 +59,9 @@ app.post('/api/users', (req, res) => {
 });
 
 app.post('/api/users/:_id/exercises', async (req, res) => {
-  const requestedId = req.body[':_id'];
+  // parse the id from the url parameters as some
+  // POST payloads may not include the id.
+  const requestedId = req.params['_id'];
   const bodyDate = req.body.date;
 
   try {

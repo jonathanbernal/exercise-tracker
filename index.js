@@ -4,6 +4,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const path = require('path');
+const { DateTime } = require('luxon');
 require('dotenv').config();
 
 // Set up middleware
@@ -16,6 +17,17 @@ const database = require('./bin/Database.js');
 const User = require('./models/User.js');
 const Exercise = require('./models/Exercise.js');
 const Log = require('./models/Log.js');
+
+// This function returns a date in the format WKD Mon Day YYYY
+// If the argument is empty, the current date is returned.
+function sanitizeDate(date) {
+  if (!date) {
+    return DateTime.now().toLocaleString(DateTime.DATE_MED_WITH_WEEKDAY)
+      .split(', ').join(' ')
+  }
+  return DateTime.fromISO(date).toLocaleString(DateTime.DATE_MED_WITH_WEEKDAY)
+    .split(', ').join(' ');
+}
 
 // Define routes
 app.get('/', (req, res) => {
@@ -47,13 +59,18 @@ app.post('/api/users/:_id/exercises', async (req, res) => {
   const requestedId = req.body[':_id'];
   const bodyDate = req.body.date;
   const userExists =  await User.findOne({_id: requestedId});
+
+  console.log(`unprocessed date: ${req.body.date}`);
   
   if (userExists) {
+    const dateToInsert = sanitizeDate(bodyDate);
+    console.log(`dateToInsert: ${dateToInsert}`);
+
     const newExercise = new Exercise({
       username: userExists.username,
       description: req.body.description,
       duration: req.body.duration,
-      date: req.body.date  ? new Date(Date.parse(req.body.date)).toDateString() : Date.now()
+      date: dateToInsert 
     });
 
     //await newExercise.populate('user', 'username _id');

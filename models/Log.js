@@ -13,7 +13,7 @@ const LogSchema = new Schema({
         ref: 'Exercise'
     }]
 }, {
-    collection: 'logs'
+    collection: 'logs',
 });
 
 module.exports = mongoose.model('Log', LogSchema);

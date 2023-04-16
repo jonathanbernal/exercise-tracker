@@ -11,6 +11,10 @@ require('dotenv').config();
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.urlencoded({extended: true}));
+app.use('*', (req, res, next) => {
+  console.log(`${req.method} ${req.ip}`);
+  next();
+})
 
 // User-defined imports
 const database = require('./bin/Database.js');
@@ -20,13 +24,12 @@ const Log = require('./models/Log.js');
 
 // This function returns a date in the format WKD Mon Day YYYY
 // If the argument is empty, the current date is returned.
+
 function sanitizeDate(date) {
   if (!date) {
-    return DateTime.now().toLocaleString(DateTime.DATE_MED_WITH_WEEKDAY)
-      .split(', ').join(' ')
+    return DateTime.now().toFormat('EEE MMM dd yyyy')
   }
-  return DateTime.fromISO(date).toLocaleString(DateTime.DATE_MED_WITH_WEEKDAY)
-    .split(', ').join(' ');
+  return DateTime.fromISO(date).toFormat('EEE MMM dd yyyy')
 }
 
 // Define routes
@@ -58,32 +61,37 @@ app.post('/api/users', (req, res) => {
 app.post('/api/users/:_id/exercises', async (req, res) => {
   const requestedId = req.body[':_id'];
   const bodyDate = req.body.date;
-  const userExists =  await User.findOne({_id: requestedId});
 
-  console.log(`unprocessed date: ${req.body.date}`);
-  
-  if (userExists) {
-    const dateToInsert = sanitizeDate(bodyDate);
-    console.log(`dateToInsert: ${dateToInsert}`);
+  try {
+    const userExists = await User.findOne({ _id: requestedId });
 
-    const newExercise = new Exercise({
-      username: userExists.username,
-      description: req.body.description,
-      duration: req.body.duration,
-      date: dateToInsert 
-    });
+    if (userExists) {
+      const dateToInsert = sanitizeDate(bodyDate);
 
-    //await newExercise.populate('user', 'username _id');
-    console.log(newExercise);
-    await newExercise.save();
-    userExists.exercises.push(newExercise);
-    await userExists.populate('exercises', '-username');
-    const result = await userExists.save();
-    // return the exercise that was just created so the user knows
-    // what was inserted into the target document.
-    res.send(newExercise);
-  } else {
-    res.json({error: `user with id ${req.body[':_id']} does not exist in DB`});
+      const newExercise = new Exercise({
+        username: userExists.username,
+        description: req.body.description,
+        duration: req.body.duration,
+        date: dateToInsert
+      });
+
+      await newExercise.save();
+      userExists.exercises.push(newExercise);
+      const result = await userExists.save();
+      // return the exercise that was just created so the user knows
+      // what was inserted into the target document.
+      res.json({
+        username: newExercise.username,
+        _id: result.id,
+        description: newExercise.description,
+        duration: newExercise.duration,
+        date: newExercise.date,
+      });
+    } else {
+      res.json({ error: `user with id ${req.body[':_id']} does not exist in DB` });
+    }
+  } catch (err) {
+    console.log(err);
   }
 });
 

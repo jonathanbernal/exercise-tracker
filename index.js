@@ -25,6 +25,7 @@ const Log = require('./models/Log.js');
 // If the argument is empty, the current date is returned.
 
 function sanitizeDate(date) {
+  // this regex matches the YYYY-MM-DD format
   const dateRegex = /\d{4}-\d{2}-\d{2}/;
   const MILLIS_IN_A_MINUTE = 60000;
 
@@ -47,8 +48,12 @@ app.get('/', (req, res) => {
 });
 
 app.get('/api/users', async (req, res) => {
-  const allUserDocuments = await User.find();
-  res.json(allUserDocuments);
+  try {
+    const allUserDocuments = await User.find();
+    res.json(allUserDocuments);
+  } catch(err) {
+    res.json({error: 'could not retrieve all users'});
+  }
 });
 
 app.post('/api/users', (req, res) => {
@@ -116,26 +121,44 @@ app.post('/api/users/:_id/exercises', async (req, res) => {
 
 app.get('/api/users/:_id/logs', async (req, res) => {
   const requestedId = req.params['_id'];
-  const fromDate = sanitizeDate(req.query.from);
-  const toDate = sanitizeDate(req.query.to);
+  const fromDate = req.query.from;
+  const toDate = req.query.to;
+  // in case the limit query parameter is empty, make it at least 0
   const limit = parseInt(req.query.limit || 0);
-
-  console.log(`from: ${fromDate} to: ${toDate} limit: ${limit}`);
-
+  // Checking the limit value before we use it on populate()
+  // avoids returning empty queries.
   let populateOptions = limit > 0 ? {limit: limit} : {};
+
+  // This function is used to populate the query parameters
+  // for the dates. Otherwise, the logs fail to show if
+  // both dates are empty.
+  let dateOptions = (from, to) => {
+    if(from && to) {
+      return {
+        date: { $gte: sanitizeDate(from), $lte: sanitizeDate(to) }
+      }
+    } else if (!from && to) {
+      return {
+        date: { $lte: sanitizeDate(to) }
+      }
+    } else if (from && !to) {
+      return  {
+        date: { $gte: sanitizeDate(from) }
+      }
+    } else {
+      return {
+        date: { $lte: sanitizeDate() }
+      } // both dates were not provided
+    }
+  }
   
   try {
     const userExists = await User
       .findOne({_id: requestedId})
       .populate({
         path: 'exercises',
-        match: {
-          // date: {
-          //   $gte: fromDate,
-          //   $lte: toDate,
-          // }
-        },
-         options: populateOptions,
+        match: dateOptions(fromDate, toDate),
+        options: populateOptions,
       });
     //const userExists = await User.find({username: {$in: 'charizard'}})
     console.log(userExists);

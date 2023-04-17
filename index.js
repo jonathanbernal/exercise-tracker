@@ -122,6 +122,8 @@ app.get('/api/users/:_id/logs', async (req, res) => {
   const limit = parseInt(req.query.limit || 0);
 
   console.log(`from: ${fromDate} to: ${toDate} limit: ${limit}`);
+
+  let populateOptions = limit > 0 ? {limit: limit} : {};
   
   try {
     const userExists = await User
@@ -134,9 +136,7 @@ app.get('/api/users/:_id/logs', async (req, res) => {
             $lte: toDate,
           }
         },
-         options: {
-          limit: limit,
-         }
+         options: populateOptions,
       });
     //const userExists = await User.find({username: {$in: 'charizard'}})
     console.log(userExists);

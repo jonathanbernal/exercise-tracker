@@ -26,10 +26,20 @@ const Log = require('./models/Log.js');
 // If the argument is empty, the current date is returned.
 
 function sanitizeDate(date) {
+  const dateRegex = /\d{4}-\d{2}-\d{2}/;
+  const MILLIS_IN_A_MINUTE = 60000;
+
   if (!date) {
-    return DateTime.now().toFormat('EEE MMM dd yyyy');
+    return new Date();
+  } else if(dateRegex.test(date)) {
+    const parsedDate = new Date(date);
+    const minuteDifferenceBetweenTimezoneAndUTC = parsedDate.getTimezoneOffset();
+    parsedDate
+      .setMilliseconds(minuteDifferenceBetweenTimezoneAndUTC * MILLIS_IN_A_MINUTE);
+    return parsedDate;
   }
-  return DateTime.fromISO(date).toFormat('EEE MMM dd yyyy');
+  // Invalid date
+  return new Date('Invalid Date');
 }
 
 // Define routes
@@ -94,7 +104,7 @@ app.post('/api/users/:_id/exercises', async (req, res) => {
         username: newExercise.username,
         description: newExercise.description,
         duration: newExercise.duration,
-        date: newExercise.date,
+        date: newExercise.date.toDateString(),
         _id: updatedUser._id,
       });
     } else {
@@ -107,9 +117,29 @@ app.post('/api/users/:_id/exercises', async (req, res) => {
 
 app.get('/api/users/:_id/logs', async (req, res) => {
   const requestedId = req.params['_id'];
+  const fromDate = sanitizeDate(req.query.from);
+  const toDate = sanitizeDate(req.query.to);
+  const limit = parseInt(req.query.limit || 0);
+
+  console.log(`from: ${fromDate} to: ${toDate} limit: ${limit}`);
   
   try {
-    const userExists = await User.findOne({_id: requestedId}).populate('exercises', '-username -_id');
+    const userExists = await User
+      .findOne({_id: requestedId})
+      .populate({
+        path: 'exercises',
+        match: {
+          date: {
+            $gte: fromDate,
+            $lte: toDate,
+          }
+        },
+         options: {
+          limit: limit,
+         }
+      });
+    //const userExists = await User.find({username: {$in: 'charizard'}})
+    console.log(userExists);
     
     if(userExists) {
       const log = new Log({

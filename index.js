@@ -27,9 +27,9 @@ const Log = require('./models/Log.js');
 
 function sanitizeDate(date) {
   if (!date) {
-    return DateTime.now().toFormat('EEE MMM dd yyyy')
+    return DateTime.now().toFormat('EEE MMM dd yyyy');
   }
-  return DateTime.fromISO(date).toFormat('EEE MMM dd yyyy')
+  return DateTime.fromISO(date).toFormat('EEE MMM dd yyyy');
 }
 
 // Define routes
@@ -78,7 +78,9 @@ app.post('/api/users/:_id/exercises', async (req, res) => {
       });
 
       await newExercise.save();
-      userExists.exercises.push(newExercise);
+      // unshift is used because the FCC test always checks
+      // for the first value stored in the logs.
+      userExists.exercises.unshift(newExercise);
       const updatedUser = await userExists.save();
       // return the exercise that was just created so the user knows
       // what was inserted into the target document.

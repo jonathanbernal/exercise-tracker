@@ -7,7 +7,7 @@ const ExerciseSchema = new mongoose.Schema({
     description: String,
     duration: Number,
     date: {
-        type: String,
+        type: Date,
     }
 }, {
     collection: 'exercises',

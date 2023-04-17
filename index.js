@@ -131,10 +131,10 @@ app.get('/api/users/:_id/logs', async (req, res) => {
       .populate({
         path: 'exercises',
         match: {
-          date: {
-            $gte: fromDate,
-            $lte: toDate,
-          }
+          // date: {
+          //   $gte: fromDate,
+          //   $lte: toDate,
+          // }
         },
          options: populateOptions,
       });
@@ -152,7 +152,16 @@ app.get('/api/users/:_id/logs', async (req, res) => {
         username: log.username,
         count: log.count,
         _id: userExists._id,
-        log: log.log
+        log: log.log.map((exercise) => {
+          const exerciseResponse = {
+            username: exercise.username,
+            description: exercise.description,
+            duration: exercise.duration,
+            date: exercise.date.toDateString(),
+            _id: exercise._id
+          }
+          return exerciseResponse;
+        })
       })
     } else {
       res.json({error: `User with id ${requestedId} does not exist in DB.`});

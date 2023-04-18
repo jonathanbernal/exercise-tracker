@@ -194,12 +194,6 @@ app.get('/api/users/:_id/logs', async (req, res) => {
   }
    
 });
-// TODO: think about how to implement get route for
-// GET /api/users/:_id/logs?[from][&to][&limit]
-
-
-
-
 
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log('Your app is listening on port ' + listener.address().port)

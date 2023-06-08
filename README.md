@@ -1,5 +1,7 @@
 # Exercise Tracker
 
+<img src="./public/website_preview.PNG" alt="The image of the exercise tracker, containing two
+  forms-- one for adding users, the other for adding exercises">
 ## Purpose
 
 The exercise tracker itself is an API, built with the purpose of gaining
